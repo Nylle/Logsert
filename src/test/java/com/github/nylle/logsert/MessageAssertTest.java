@@ -15,6 +15,54 @@ class MessageAssertTest {
     LoggerExtension sut = new LoggerExtension(SomethingThatLogs.class);
 
     @Nested
+    class WithMessage {
+
+        @Test
+        void hasMessage() {
+            var somethingThatLogs = new SomethingThatLogs();
+            somethingThatLogs.logInfo("message");
+
+            assertThat(sut).containsLogs().withMessage("message");
+        }
+
+        @Test
+        void messageNotFound() {
+            var somethingThatLogs = new SomethingThatLogs();
+            somethingThatLogs.logInfo("other message");
+
+            assertThatExceptionOfType(AssertionError.class)
+                    .isThrownBy(() -> assertThat(sut).containsLogs().withMessage("message"))
+                    .withMessageContaining("Expecting log:\n  [[other message]]\n")
+                    .withMessageContaining("to contain:\n  [[message]]\n")
+                    .withMessageContaining("but could not find the following:\n  [[message]]");
+        }
+    }
+
+    @Nested
+    class WithMessageContaining {
+
+        @Test
+        void hasMessageContaining() {
+            var somethingThatLogs = new SomethingThatLogs();
+            somethingThatLogs.logInfo("other message, but long");
+
+            assertThat(sut).containsLogs().withMessageContaining("message");
+        }
+
+        @Test
+        void messageNotFound() {
+            var somethingThatLogs = new SomethingThatLogs();
+            somethingThatLogs.logInfo("other text");
+
+            assertThatExceptionOfType(AssertionError.class)
+                    .isThrownBy(() -> assertThat(sut).containsLogs().withMessageContaining("message"))
+                    .withMessageContaining("Expecting log:\n  [[other text]]\n")
+                    .withMessageContaining("to contain:\n  [[message]]\n")
+                    .withMessageContaining("but could not find the following:\n  [[message]]");
+        }
+    }
+
+    @Nested
     class WithLevel {
 
         @Test
@@ -22,7 +70,7 @@ class MessageAssertTest {
             var somethingThatLogs = new SomethingThatLogs();
             somethingThatLogs.logInfo("message");
 
-            assertThat(sut).containsMessage("message").withLevel(Level.INFO);
+            assertThat(sut).containsLogs().withLevel(Level.INFO);
         }
 
         @Test
@@ -31,10 +79,10 @@ class MessageAssertTest {
             somethingThatLogs.logInfo("message");
 
             assertThatExceptionOfType(AssertionError.class)
-                    .isThrownBy(() -> assertThat(sut).containsMessage("message").withLevel(Level.WARN))
-                    .withMessageContaining("Expecting log:\n  [[INFO, message]]\n")
-                    .withMessageContaining("to contain:\n  [[WARN, message]]\n")
-                    .withMessageContaining("but could not find the following:\n  [[WARN, message]]");
+                    .isThrownBy(() -> assertThat(sut).containsLogs().withLevel(Level.WARN))
+                    .withMessageContaining("Expecting log:\n  [[INFO]]\n")
+                    .withMessageContaining("to contain:\n  [[WARN]]\n")
+                    .withMessageContaining("but could not find the following:\n  [[WARN]]");
         }
     }
 
@@ -46,7 +94,7 @@ class MessageAssertTest {
             var somethingThatLogs = new SomethingThatLogs();
             somethingThatLogs.logInfoWithMdc("message", "key", "value");
 
-            assertThat(sut).containsMessage("message").withMdcEntry("key", "value");
+            assertThat(sut).containsLogs().withMdcEntry("key", "value");
         }
 
         @Test
@@ -55,10 +103,10 @@ class MessageAssertTest {
             somethingThatLogs.logInfoWithMdc("message", "otherKey", "otherValue");
 
             assertThatExceptionOfType(AssertionError.class)
-                    .isThrownBy(() -> assertThat(sut).containsMessage("message").withMdcEntry("key", "value"))
-                    .withMessageContaining("Expecting log:\n  [[message, {otherKey=otherValue}]]\n")
-                    .withMessageContaining("to contain:\n  [[message, {key=value}]]\n")
-                    .withMessageContaining("but could not find the following:\n  [[message, {key=value}]]");
+                    .isThrownBy(() -> assertThat(sut).containsLogs().withMdcEntry("key", "value"))
+                    .withMessageContaining("Expecting log:\n  [[{otherKey=otherValue}]]\n")
+                    .withMessageContaining("to contain:\n  [[{key=value}]]\n")
+                    .withMessageContaining("but could not find the following:\n  [[{key=value}]]");
         }
     }
 
@@ -70,7 +118,7 @@ class MessageAssertTest {
             var somethingThatLogs = new SomethingThatLogs();
             somethingThatLogs.logInfoWithMdc("message", "key", "value");
 
-            assertThat(sut).containsMessage("message").withMdcEntries(Map.of("key", "value"));
+            assertThat(sut).containsLogs().withMdcEntries(Map.of("key", "value"));
         }
 
         @Test
@@ -79,10 +127,10 @@ class MessageAssertTest {
             somethingThatLogs.logInfoWithMdc("message", "otherKey", "otherValue");
 
             assertThatExceptionOfType(AssertionError.class)
-                    .isThrownBy(() -> assertThat(sut).containsMessage("message").withMdcEntries(Map.of("key", "value")))
-                    .withMessageContaining("Expecting log:\n  [[message, {otherKey=otherValue}]]\n")
-                    .withMessageContaining("to contain:\n  [[message, {key=value}]]\n")
-                    .withMessageContaining("but could not find the following:\n  [[message, {key=value}]]");
+                    .isThrownBy(() -> assertThat(sut).containsLogs().withMdcEntries(Map.of("key", "value")))
+                    .withMessageContaining("Expecting log:\n  [[{otherKey=otherValue}]]\n")
+                    .withMessageContaining("to contain:\n  [[{key=value}]]\n")
+                    .withMessageContaining("but could not find the following:\n  [[{key=value}]]");
         }
     }
 
@@ -94,7 +142,7 @@ class MessageAssertTest {
             var somethingThatLogs = new SomethingThatLogs();
             somethingThatLogs.logInfoWithMdc("message", "key", "value");
 
-            assertThat(sut).containsMessage("message").withMdcEntriesExactly(Map.of("key", "value"));
+            assertThat(sut).containsLogs().withMdcEntriesExactly(Map.of("key", "value"));
         }
 
         @Test
@@ -104,10 +152,10 @@ class MessageAssertTest {
             somethingThatLogs.logInfoWithMdc("message", mdcMap);
 
             assertThatExceptionOfType(AssertionError.class)
-                    .isThrownBy(() -> assertThat(sut).containsMessage("message").withMdcEntriesExactly(Map.of("key", "value")))
-                    .withMessageContaining("Expecting log:\n  [[message, " + mdcMap + "]]\n")
-                    .withMessageContaining("to contain exactly:\n  [[message, {key=value}]]\n")
-                    .withMessageContaining("but could not find the following:\n  [[message, {key=value}]]");
+                    .isThrownBy(() -> assertThat(sut).containsLogs().withMdcEntriesExactly(Map.of("key", "value")))
+                    .withMessageContaining("Expecting log:\n  [[" + mdcMap + "]]\n")
+                    .withMessageContaining("to contain exactly:\n  [[{key=value}]]\n")
+                    .withMessageContaining("but could not find the following:\n  [[{key=value}]]");
         }
     }
 
@@ -119,7 +167,7 @@ class MessageAssertTest {
             var somethingThatLogs = new SomethingThatLogs();
             somethingThatLogs.logInfoWithMdcAndException("message", Map.of("key", "value"), new RuntimeException("expected for test"));
 
-            assertThat(sut).containsMessage("message").withException(RuntimeException.class);
+            assertThat(sut).containsLogs().withException(RuntimeException.class);
         }
 
         @Test
@@ -128,10 +176,10 @@ class MessageAssertTest {
             somethingThatLogs.logInfoWithMdcAndException("message", Map.of("key", "value"), new RuntimeException("expected for test"));
 
             assertThatExceptionOfType(AssertionError.class)
-                    .isThrownBy(() -> assertThat(sut).containsMessage("message").withException(Exception.class))
-                    .withMessageContaining("Expecting log:\n  [[message, java.lang.RuntimeException]]\n")
-                    .withMessageContaining("to contain:\n  [[message, java.lang.Exception]]\n")
-                    .withMessageContaining("but could not find the following:\n  [[message, java.lang.Exception]]");
+                    .isThrownBy(() -> assertThat(sut).containsLogs().withException(Exception.class))
+                    .withMessageContaining("Expecting log:\n  [[java.lang.RuntimeException]]\n")
+                    .withMessageContaining("to contain:\n  [[java.lang.Exception]]\n")
+                    .withMessageContaining("but could not find the following:\n  [[java.lang.Exception]]");
         }
 
         @Test
@@ -139,7 +187,7 @@ class MessageAssertTest {
             var somethingThatLogs = new SomethingThatLogs();
             somethingThatLogs.logInfoWithMdcAndException("message", Map.of("key", "value"), new RuntimeException("expected for test"));
 
-            assertThat(sut).containsMessage("message").withException(RuntimeException.class, "expected for test");
+            assertThat(sut).containsLogs().withException(RuntimeException.class, "expected for test");
         }
 
         @Test
@@ -148,10 +196,10 @@ class MessageAssertTest {
             somethingThatLogs.logInfoWithMdcAndException("message", Map.of("key", "value"), new RuntimeException("expected for test"));
 
             assertThatExceptionOfType(AssertionError.class)
-                    .isThrownBy(() -> assertThat(sut).containsMessage("message").withException(Exception.class, "expected for test"))
-                    .withMessageContaining("Expecting log:\n  [[message, java.lang.RuntimeException: expected for test]]\n")
-                    .withMessageContaining("to contain:\n  [[message, java.lang.Exception: expected for test]]\n")
-                    .withMessageContaining("but could not find the following:\n  [[message, java.lang.Exception: expected for test]]");
+                    .isThrownBy(() -> assertThat(sut).containsLogs().withException(Exception.class, "expected for test"))
+                    .withMessageContaining("Expecting log:\n  [[java.lang.RuntimeException: expected for test]]\n")
+                    .withMessageContaining("to contain:\n  [[java.lang.Exception: expected for test]]\n")
+                    .withMessageContaining("but could not find the following:\n  [[java.lang.Exception: expected for test]]");
         }
 
         @Test
@@ -160,10 +208,10 @@ class MessageAssertTest {
             somethingThatLogs.logInfoWithMdcAndException("message", Map.of("key", "value"), new RuntimeException("expected for test"));
 
             assertThatExceptionOfType(AssertionError.class)
-                    .isThrownBy(() -> assertThat(sut).containsMessage("message").withException(RuntimeException.class, "other message"))
-                    .withMessageContaining("Expecting log:\n  [[message, java.lang.RuntimeException: expected for test]]\n")
-                    .withMessageContaining("to contain:\n  [[message, java.lang.RuntimeException: other message]]\n")
-                    .withMessageContaining("but could not find the following:\n  [[message, java.lang.RuntimeException: other message]]");
+                    .isThrownBy(() -> assertThat(sut).containsLogs().withException(RuntimeException.class, "other message"))
+                    .withMessageContaining("Expecting log:\n  [[java.lang.RuntimeException: expected for test]]\n")
+                    .withMessageContaining("to contain:\n  [[java.lang.RuntimeException: other message]]\n")
+                    .withMessageContaining("but could not find the following:\n  [[java.lang.RuntimeException: other message]]");
         }
 
         @Test
@@ -173,7 +221,7 @@ class MessageAssertTest {
             var somethingThatLogs = new SomethingThatLogs();
             somethingThatLogs.logInfoWithMdcAndException("message", Map.of("key", "value"), exception);
 
-            assertThat(sut).containsMessage("message").withException(exception);
+            assertThat(sut).containsLogs().withException(exception);
         }
 
         @Test
@@ -184,10 +232,10 @@ class MessageAssertTest {
             somethingThatLogs.logInfoWithMdcAndException("message", Map.of("key", "value"), exception);
 
             assertThatExceptionOfType(AssertionError.class)
-                    .isThrownBy(() -> assertThat(sut).containsMessage("message").withException(new IllegalStateException("expected for test")))
-                    .withMessageContaining("Expecting log:\n  [[message, java.lang.RuntimeException: expected for test]]\n")
-                    .withMessageContaining("to contain:\n  [[message, java.lang.IllegalStateException: expected for test]]\n")
-                    .withMessageContaining("but could not find the following:\n  [[message, java.lang.IllegalStateException: expected for test]]");
+                    .isThrownBy(() -> assertThat(sut).containsLogs().withException(new IllegalStateException("expected for test")))
+                    .withMessageContaining("Expecting log:\n  [[java.lang.RuntimeException: expected for test]]\n")
+                    .withMessageContaining("to contain:\n  [[java.lang.IllegalStateException: expected for test]]\n")
+                    .withMessageContaining("but could not find the following:\n  [[java.lang.IllegalStateException: expected for test]]");
         }
     }
 
@@ -198,7 +246,9 @@ class MessageAssertTest {
         var somethingThatLogs = new SomethingThatLogs();
         somethingThatLogs.logInfoWithMdcAndException("message", Map.of("key", "value", "foo", "bar"), expectedException);
 
-        assertThat(sut).containsMessage("message")
+        assertThat(sut).containsLogs()
+                .withMessage("message")
+                .withMessageContaining("essa")
                 .withLevel(Level.INFO)
                 .withMdcEntry("foo", "bar")
                 .withMdcEntry("key", "value")

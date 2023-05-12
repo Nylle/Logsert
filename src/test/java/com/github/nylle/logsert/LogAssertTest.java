@@ -16,23 +16,20 @@ class LogAssertTest {
     LoggerExtension sut = new LoggerExtension(SomethingThatLogs.class);
 
     @Test
-    void containsMessage() {
+    void containsLogs() {
         var somethingThatLogs = new SomethingThatLogs();
         somethingThatLogs.logInfo("message");
 
-        assertThat(sut).containsMessage("message");
+        assertThat(sut).containsLogs();
     }
 
     @Test
-    void messageNotFound() {
-        var somethingThatLogs = new SomethingThatLogs();
-        somethingThatLogs.logInfo("other");
-
+    void logsNotFound() {
         assertThatExceptionOfType(AssertionError.class)
-                .isThrownBy(() -> assertThat(sut).containsMessage("message"))
-                .withMessageContaining("Expecting log:\n  [other]\n")
-                .withMessageContaining("to contain:\n  [message]\n")
-                .withMessageContaining("but could not find the following:\n  [message]");
+                .isThrownBy(() -> assertThat(sut).containsLogs())
+                .withMessageContaining("Expecting log:\n  []\n")
+                .withMessageContaining("to contain entries\n")
+                .withMessageContaining("but could not find any entry");
     }
 
     @Test

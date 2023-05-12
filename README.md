@@ -15,7 +15,9 @@ class SomethingThatLogsTest {
         
         sut.logInfoWithMdcAndException("message", Map.of("key", "value", "foo", "bar"), new RuntimeException("expected for test"));
 
-        assertThat(logger).containsMessage("message")
+        assertThat(logger).containsLogs()
+                .withMessage("message")
+                .withMessageContaining("essa")
                 .withLevel(Level.INFO)
                 .withMdcEntry("foo", "bar")
                 .withMdcEntry("key", "value")

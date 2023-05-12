@@ -2,9 +2,6 @@ package com.github.nylle.logsert;
 
 import org.assertj.core.api.AbstractAssert;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 public class LogAssert extends AbstractAssert<LogAssert, LoggerExtension> {
 
     public LogAssert(LoggerExtension actual) {
@@ -15,17 +12,15 @@ public class LogAssert extends AbstractAssert<LogAssert, LoggerExtension> {
         return new LogAssert(actual);
     }
 
-    public MessageAssert containsMessage(String message) {
+    public MessageAssert containsLogs() {
         isNotNull();
 
-        var candidates = actual.getLogEvents().stream().filter(x -> x.getMessage().equals(message)).collect(Collectors.toList());
+        var candidates = actual.getLogEvents();
 
         if(candidates.isEmpty()) {
-            failWithMessage("\nExpecting log:\n  %s\nto contain:\n  %s\nbut could not find the following:\n  %s",
-                    actual.getLogEvents().stream().map(x -> x.getMessage()).collect(Collectors.toList()),
-                    List.of(message),
-                    List.of(message));
+            failWithMessage("\nExpecting log:\n  %s\nto contain entries\nbut could not find any entry",
+                    actual.getLogEvents());
         }
-        return new MessageAssert(candidates, message);
+        return new MessageAssert(candidates);
     }
 }

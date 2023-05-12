@@ -16,19 +16,52 @@ import static java.util.stream.Collectors.toList;
 
 public class MessageAssert extends AbstractAssert<MessageAssert, List<ILoggingEvent>> {
 
-    private final String logMessage;
 
     private List<ILoggingEvent> candidates;
 
     private Level level;
+    private String message;
     private Map<String, String> mdc;
     private String throwableClass;
     private String throwableMessage;
 
+    public MessageAssert(List<ILoggingEvent> actual) {
+        super(actual, MessageAssert.class);
+        this.candidates = actual;
+    }
+
     public MessageAssert(List<ILoggingEvent> actual, String message) {
         super(actual, MessageAssert.class);
-        this.logMessage = message;
+        this.message = message;
         this.candidates = actual;
+    }
+
+    public MessageAssert withMessage(String message) {
+        isNotNull();
+
+        this.message = message;
+        this.candidates = this.candidates.stream()
+                .filter(x -> x.getMessage().equals(message))
+                .collect(toList());
+
+        if (candidates.isEmpty()) {
+            fail();
+        }
+        return this;
+    }
+
+    public MessageAssert withMessageContaining(String message) {
+        isNotNull();
+
+        this.message = message;
+        this.candidates = this.candidates.stream()
+                .filter(x -> x.getMessage().contains(message))
+                .collect(toList());
+
+        if (candidates.isEmpty()) {
+            fail();
+        }
+        return this;
     }
 
     public MessageAssert withLevel(Level level) {
@@ -138,7 +171,7 @@ public class MessageAssert extends AbstractAssert<MessageAssert, List<ILoggingEv
     }
 
     private void fail() {
-        var expected = format(level, logMessage, throwableClass, throwableMessage, mdc);
+        var expected = format(level, message, throwableClass, throwableMessage, mdc);
         failWithMessage("\nExpecting log:\n  %s\nto contain:\n  %s\nbut could not find the following:\n  %s",
                 actual.stream().map(x -> format(x)).collect(toList()).toString().replace("], ", "],\n   "),
                 List.of(expected),
@@ -146,7 +179,7 @@ public class MessageAssert extends AbstractAssert<MessageAssert, List<ILoggingEv
     }
 
     private void failExactly() {
-        var expected = format(level, logMessage, throwableClass, throwableMessage, mdc);
+        var expected = format(level, message, throwableClass, throwableMessage, mdc);
         failWithMessage("\nExpecting log:\n  %s\nto contain exactly:\n  %s\nbut could not find the following:\n  %s",
                 actual.stream().map(x -> format(x)).collect(toList()).toString().replace("], ", "],\n   "),
                 List.of(expected),
@@ -156,7 +189,7 @@ public class MessageAssert extends AbstractAssert<MessageAssert, List<ILoggingEv
     private String format(ILoggingEvent event) {
         return format(
                 level == null ? null : event.getLevel(),
-                logMessage == null ? null : event.getMessage(),
+                message == null ? null : event.getMessage(),
                 throwableClass == null ? null : event.getThrowableProxy().getClassName(),
                 throwableMessage == null ? null : event.getThrowableProxy().getMessage(),
                 mdc == null ? null : event.getMDCPropertyMap()
