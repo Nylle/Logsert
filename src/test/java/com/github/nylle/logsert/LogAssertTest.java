@@ -21,6 +21,7 @@ class LogAssertTest {
         somethingThatLogs.logInfo("message");
 
         assertThat(sut).containsLogs();
+        assertThat(sut).containsLogs(1);
     }
 
     @Test
@@ -30,6 +31,15 @@ class LogAssertTest {
                 .withMessageContaining("Expecting log:\n  []\n")
                 .withMessageContaining("to contain entries\n")
                 .withMessageContaining("but could not find any entry");
+    }
+
+    @Test
+    void logCountMismatch() {
+        assertThatExceptionOfType(AssertionError.class)
+                .isThrownBy(() -> assertThat(sut).containsLogs(1))
+                .withMessageContaining("Expecting log:\n  []\n")
+                .withMessageContaining("to contain 1 entries\n")
+                .withMessageContaining("but found 0 entries");
     }
 
     @Test

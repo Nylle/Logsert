@@ -23,4 +23,18 @@ public class LogAssert extends AbstractAssert<LogAssert, LoggerExtension> {
         }
         return new MessageAssert(candidates);
     }
+
+    public MessageAssert containsLogs(int count) {
+        isNotNull();
+
+        var candidates = actual.getLogEvents();
+
+        if(candidates.size() != count) {
+            failWithMessage("\nExpecting log:\n  %s\nto contain %s entries\nbut found %s entries",
+                    actual.getLogEvents(),
+                    count,
+                    candidates.size());
+        }
+        return new MessageAssert(candidates);
+    }
 }
