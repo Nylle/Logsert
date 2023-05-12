@@ -1,10 +1,9 @@
 package com.github.nylle.logsert;
 
+import ch.qos.logback.classic.Level;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-
-import ch.qos.logback.classic.Level;
 
 import java.util.Map;
 
@@ -40,7 +39,7 @@ class MessageAssertTest {
     }
 
     @Nested
-    class WithMdc {
+    class WithMdcEntry {
 
         @Test
         void hasMdc() {
@@ -59,6 +58,55 @@ class MessageAssertTest {
                     .isThrownBy(() -> assertThat(sut).containsMessage("message").withMdcEntry("key", "value"))
                     .withMessageContaining("Expecting log:\n  [[message, {otherKey=otherValue}]]\n")
                     .withMessageContaining("to contain:\n  [[message, {key=value}]]\n")
+                    .withMessageContaining("but could not find the following:\n  [[message, {key=value}]]");
+        }
+    }
+
+    @Nested
+    class WithMdcEntries {
+
+        @Test
+        void hasMdcEntries() {
+            var somethingThatLogs = new SomethingThatLogs();
+            somethingThatLogs.logInfoWithMdc("message", "key", "value");
+
+            assertThat(sut).containsMessage("message").withMdcEntries(Map.of("key", "value"));
+        }
+
+        @Test
+        void mdcEntriesNotFound() {
+            var somethingThatLogs = new SomethingThatLogs();
+            somethingThatLogs.logInfoWithMdc("message", "otherKey", "otherValue");
+
+            assertThatExceptionOfType(AssertionError.class)
+                    .isThrownBy(() -> assertThat(sut).containsMessage("message").withMdcEntries(Map.of("key", "value")))
+                    .withMessageContaining("Expecting log:\n  [[message, {otherKey=otherValue}]]\n")
+                    .withMessageContaining("to contain:\n  [[message, {key=value}]]\n")
+                    .withMessageContaining("but could not find the following:\n  [[message, {key=value}]]");
+        }
+    }
+
+    @Nested
+    class WithMdcEntriesExactly {
+
+        @Test
+        void hasExactlyMdcEntries() {
+            var somethingThatLogs = new SomethingThatLogs();
+            somethingThatLogs.logInfoWithMdc("message", "key", "value");
+
+            assertThat(sut).containsMessage("message").withMdcEntriesExactly(Map.of("key", "value"));
+        }
+
+        @Test
+        void mdcEntriesNotExactlyMatched() {
+            var somethingThatLogs = new SomethingThatLogs();
+            var mdcMap = Map.of("key", "value", "otherKey", "otherValue");
+            somethingThatLogs.logInfoWithMdc("message", mdcMap);
+
+            assertThatExceptionOfType(AssertionError.class)
+                    .isThrownBy(() -> assertThat(sut).containsMessage("message").withMdcEntriesExactly(Map.of("key", "value")))
+                    .withMessageContaining("Expecting log:\n  [[message, " + mdcMap + "]]\n")
+                    .withMessageContaining("to contain exactly:\n  [[message, {key=value}]]\n")
                     .withMessageContaining("but could not find the following:\n  [[message, {key=value}]]");
         }
     }
@@ -141,26 +189,25 @@ class MessageAssertTest {
                     .withMessageContaining("to contain:\n  [[message, java.lang.IllegalStateException: expected for test]]\n")
                     .withMessageContaining("but could not find the following:\n  [[message, java.lang.IllegalStateException: expected for test]]");
         }
-
     }
 
     @Test
-    void end2end() {
+    void demonstrateAllAssertions() {
+        var expectedException = new RuntimeException("expected for test");
+
         var somethingThatLogs = new SomethingThatLogs();
-        somethingThatLogs.logInfoWithMdcAndException("message", Map.of("key", "value", "foo", "bar"), new RuntimeException("expected for test"));
-        somethingThatLogs.logInfoWithMdcAndException("message", Map.of("key2", "value2"), new RuntimeException("expected for test"));
-        somethingThatLogs.logInfoWithMdcAndException("message", Map.of("key", "value"), new RuntimeException("expected for test2"));
+        somethingThatLogs.logInfoWithMdcAndException("message", Map.of("key", "value", "foo", "bar"), expectedException);
 
         assertThat(sut).containsMessage("message")
+                .withLevel(Level.INFO)
                 .withMdcEntry("foo", "bar")
                 .withMdcEntry("key", "value")
-                .withException(RuntimeException.class, "expected for test")
-                .withLevel(Level.INFO);
-
-//        assertThat(sut).containsMessage("message")
-//                .withMdcEntry("key2", "value2")
-//                .withException(RuntimeException.class, "expected for test")
-//                .withLevel(Level.WARN);
+                .withMdcEntries(Map.of("key", "value"))
+                .withMdcEntries(Map.of("foo", "bar"))
+                .withMdcEntries(Map.of("key", "value", "foo", "bar"))
+                .withMdcEntriesExactly(Map.of("key", "value", "foo", "bar"))
+                .withException(expectedException)
+                .withException(RuntimeException.class)
+                .withException(RuntimeException.class, "expected for test");
     }
-
 }

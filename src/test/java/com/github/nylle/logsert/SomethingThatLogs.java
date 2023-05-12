@@ -19,8 +19,14 @@ public class SomethingThatLogs {
         MDC.clear();
     }
 
+    public void logInfoWithMdc(String message, Map<String, String> mdc) {
+        mdc.forEach((key, value) -> MDC.put(key, value));
+        logger.info(message);
+        MDC.clear();
+    }
+
     public void logInfoWithMdcAndException(String message, Map<String, String> mdc, Exception exception) {
-        mdc.entrySet().forEach(x -> MDC.put(x.getKey(), x.getValue()));
+        mdc.forEach((key, value) -> MDC.put(key, value));
         logger.info(message, exception);
         MDC.clear();
     }
