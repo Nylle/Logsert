@@ -15,7 +15,7 @@ class SomethingThatLogsTest {
         
         sut.logInfoWithMdcAndException("message", Map.of("key", "value", "foo", "bar"), new RuntimeException("expected for test"));
 
-        assertThat(sut).containsMessage("message")
+        assertThat(logger).containsMessage("message")
                 .withLevel(Level.INFO)
                 .withMdcEntry("foo", "bar")
                 .withMdcEntry("key", "value")
@@ -30,10 +30,11 @@ class SomethingThatLogsTest {
 
     @Test
     void standardListAssertionsAreAlsoSupported() {
-        var somethingThatLogs = new SomethingThatLogs();
-        somethingThatLogs.logInfoWithMdcAndException("message", Map.of("key", "value"), new RuntimeException("expected for test"));
+        var sut = new SomethingThatLogs();
+        sut.logInfoWithMdcAndException("message", Map.of("key", "value"), new RuntimeException("expected for test"));
 
-        assertThat(sut.getLogEvents()).extracting("level", "message", "MDCPropertyMap", "throwableProxy.className", "throwableProxy.message")
+        assertThat(logger.getLogEvents())
+                .extracting("level", "message", "MDCPropertyMap", "throwableProxy.className", "throwableProxy.message")
                 .contains(tuple(Level.INFO, "message", Map.of("key", "value"), RuntimeException.class.getName(), "expected for test"));
     }
 }
