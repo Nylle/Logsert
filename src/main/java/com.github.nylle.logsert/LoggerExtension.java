@@ -16,6 +16,10 @@ public class LoggerExtension implements BeforeEachCallback, AfterEachCallback {
     private final ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
     private final Logger logger;
 
+    /**
+     * Create a log appender for the specified class
+     * @param type
+     */
     public LoggerExtension(Class<?> type) {
         this.logger = LoggerFactory.getLogger(type);
     }
