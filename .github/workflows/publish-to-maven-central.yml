@@ -38,6 +38,6 @@ jobs:
           release_name: ${{ github.ref }}
           body: |
             ## What's changed?
-            ${{ github.event.head_commit.message }}
+              ${{ github.event.head_commit.message }}
           draft: false
           prerelease: false
