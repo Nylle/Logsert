@@ -10,12 +10,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class LoggerExtension implements BeforeEachCallback, AfterEachCallback {
+public class LogRecorder implements BeforeEachCallback, AfterEachCallback {
 
     private final ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
     private final Logger logger;
 
-    public LoggerExtension(Class<?> type) {
+    public LogRecorder(Class<?> type) {
         this.logger = (Logger) LoggerFactory.getLogger(type);
     }
 

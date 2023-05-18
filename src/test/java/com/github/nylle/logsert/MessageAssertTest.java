@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 class MessageAssertTest {
     @RegisterExtension
-    LoggerExtension sut = new LoggerExtension(SomethingThatLogs.class);
+    LogRecorder sut = new LogRecorder(SomethingThatLogs.class);
 
     @Nested
     class WithMessage {

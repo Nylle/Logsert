@@ -8,10 +8,10 @@ import ch.qos.logback.classic.Level;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-class LoggerExtensionTest {
+class LogRecorderTest {
 
     @RegisterExtension
-    LoggerExtension sut = new LoggerExtension(SomethingThatLogs.class);
+    LogRecorder sut = new LogRecorder(SomethingThatLogs.class);
 
     @Test
     void getEvents() {

@@ -2,13 +2,13 @@ package com.github.nylle.logsert;
 
 import org.assertj.core.api.AbstractAssert;
 
-public class LogAssert extends AbstractAssert<LogAssert, LoggerExtension> {
+public class LogAssert extends AbstractAssert<LogAssert, LogRecorder> {
 
-    public LogAssert(LoggerExtension actual) {
+    public LogAssert(LogRecorder actual) {
         super(actual, LogAssert.class);
     }
 
-    public static LogAssert assertThat(LoggerExtension actual) {
+    public static LogAssert assertThat(LogRecorder actual) {
         return new LogAssert(actual);
     }
 

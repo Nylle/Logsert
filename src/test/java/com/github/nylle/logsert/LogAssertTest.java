@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.tuple;
 
 class LogAssertTest {
     @RegisterExtension
-    LoggerExtension sut = new LoggerExtension(SomethingThatLogs.class);
+    LogRecorder sut = new LogRecorder(SomethingThatLogs.class);
 
     @Test
     void containsLogs() {
