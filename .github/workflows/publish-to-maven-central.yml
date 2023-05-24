@@ -29,6 +29,12 @@ jobs:
           nexus_username: ${{ secrets.SONATYPE_USERNAME }}
           nexus_password: ${{ secrets.SONATYPE_PASSWORD }}
 
+      - name: Create Release Message
+        run: |
+          echo "## What's changed?" > release.txt
+          git fetch --tags --force
+          git tag -l --sort=-taggerdate --format='%(contents)' $(git describe --tags $(git branch --show-current)) | grep . | while read line; do echo "- $line"; done >> release.txt
+
       - name: Release GitHub sources
         uses: actions/create-release@v1
         env:
@@ -36,8 +42,6 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
-          body: |
-            ## What's changed?
-              ${{ github.event.head_commit.message }}
+          body_path: release.txt
           draft: false
           prerelease: false
