@@ -15,10 +15,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 
 public class MessageAssert extends AbstractAssert<MessageAssert, List<ILoggingEvent>> {
-
-
     private List<ILoggingEvent> candidates;
-
     private Level level;
     private String message;
     private Map<String, String> mdc;
@@ -41,7 +38,7 @@ public class MessageAssert extends AbstractAssert<MessageAssert, List<ILoggingEv
 
         this.message = message;
         this.candidates = this.candidates.stream()
-                .filter(x -> x.getMessage().equals(message))
+                .filter(x -> x.getFormattedMessage().equals(message))
                 .collect(toList());
 
         if (candidates.isEmpty()) {
@@ -55,7 +52,7 @@ public class MessageAssert extends AbstractAssert<MessageAssert, List<ILoggingEv
 
         this.message = message;
         this.candidates = this.candidates.stream()
-                .filter(x -> x.getMessage().contains(message))
+                .filter(x -> x.getFormattedMessage().contains(message))
                 .collect(toList());
 
         if (candidates.isEmpty()) {

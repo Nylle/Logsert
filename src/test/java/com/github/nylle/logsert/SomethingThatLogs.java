@@ -13,6 +13,10 @@ public class SomethingThatLogs {
         logger.info(message);
     }
 
+    public void logInfoWithArguments(String message, Object argument) {
+        logger.info(message, argument);
+    }
+
     public void logInfoWithMdc(String message, String key, String value) {
         MDC.put(key, value);
         logger.info(message);

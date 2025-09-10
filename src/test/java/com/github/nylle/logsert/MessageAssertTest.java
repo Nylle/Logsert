@@ -26,6 +26,14 @@ class MessageAssertTest {
         }
 
         @Test
+        void inlinesArguments() {
+            var somethingThatLogs = new SomethingThatLogs();
+            somethingThatLogs.logInfoWithArguments("Hello {}!", "world");
+
+            assertThat(sut).containsLogs().withMessage("Hello world!");
+        }
+
+        @Test
         void messageNotFound() {
             var somethingThatLogs = new SomethingThatLogs();
             somethingThatLogs.logInfo("other message");
@@ -47,6 +55,14 @@ class MessageAssertTest {
             somethingThatLogs.logInfo("other message, but long");
 
             assertThat(sut).containsLogs().withMessageContaining("message");
+        }
+
+        @Test
+        void inlinesArguments() {
+            var somethingThatLogs = new SomethingThatLogs();
+            somethingThatLogs.logInfoWithArguments("Hello {}!", "world");
+
+            assertThat(sut).containsLogs().withMessageContaining("lo wor");
         }
 
         @Test
