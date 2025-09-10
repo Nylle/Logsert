@@ -11,7 +11,7 @@ Logsert helps to test logging functionality by recording log-events during test-
 <dependency>
     <groupId>com.github.nylle</groupId>
     <artifactId>logsert</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <scope>test</scope>
 </dependency>
 ```
