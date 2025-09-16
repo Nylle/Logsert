@@ -255,12 +255,42 @@ class MessageAssertTest {
         }
     }
 
+    @Nested
+    class Times {
+
+        @Test
+        void assertsNumberOfMessages() {
+            var somethingThatLogs = new SomethingThatLogs();
+            somethingThatLogs.logInfo("message");
+            somethingThatLogs.logInfo("message 2");
+
+            assertThat(sut).containsLogs()
+                    .times(2)
+                    .withMessage("message")
+                    .times(1);
+        }
+
+        @Test
+        void failsIfCountIsOff() {
+            var somethingThatLogs = new SomethingThatLogs();
+            somethingThatLogs.logInfo("message");
+
+            assertThatExceptionOfType(AssertionError.class)
+                    .isThrownBy(() -> assertThat(sut).containsLogs().withMessage("message").times(2))
+                    .withMessageContaining("Expecting log:\n  [[INFO] message]\n")
+                    .withMessageContaining("to contain 2 entries\n")
+                    .withMessageContaining("but found 1 entries");
+        }
+    }
+
     @Test
     void demonstrateAllAssertions() {
         var expectedException = new RuntimeException("expected for test");
 
         var somethingThatLogs = new SomethingThatLogs();
         somethingThatLogs.logInfoWithMdcAndException("message", Map.of("key", "value", "foo", "bar"), expectedException);
+        somethingThatLogs.logInfo("message 2");
+        somethingThatLogs.logInfo("message 2");
 
         assertThat(sut).containsLogs()
                 .withMessage("message")
@@ -274,6 +304,10 @@ class MessageAssertTest {
                 .withMdcEntriesExactly(Map.of("key", "value", "foo", "bar"))
                 .withException(expectedException)
                 .withException(RuntimeException.class)
-                .withException(RuntimeException.class, "expected for test");
+                .withException(RuntimeException.class, "expected for test")
+                .times(1)
+                .withMessage("message 2")
+                .withLevel(Level.INFO)
+                .times(2);
     }
 }

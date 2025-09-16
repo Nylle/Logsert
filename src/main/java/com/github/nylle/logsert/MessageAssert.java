@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 
 public class MessageAssert extends AbstractAssert<MessageAssert, List<ILoggingEvent>> {
+    private List<ILoggingEvent> loggingEvents;
     private List<ILoggingEvent> candidates;
     private Level level;
     private String message;
@@ -24,12 +25,7 @@ public class MessageAssert extends AbstractAssert<MessageAssert, List<ILoggingEv
 
     public MessageAssert(List<ILoggingEvent> actual) {
         super(actual, MessageAssert.class);
-        this.candidates = actual;
-    }
-
-    public MessageAssert(List<ILoggingEvent> actual, String message) {
-        super(actual, MessageAssert.class);
-        this.message = message;
+        this.loggingEvents = actual;
         this.candidates = actual;
     }
 
@@ -165,6 +161,16 @@ public class MessageAssert extends AbstractAssert<MessageAssert, List<ILoggingEv
             fail();
         }
         return this;
+    }
+
+    public MessageAssert times(int count) {
+        if(candidates.size() != count) {
+            failWithMessage("\nExpecting log:\n  %s\nto contain %s entries\nbut found %s entries",
+                    candidates,
+                    count,
+                    candidates.size());
+        }
+        return new MessageAssert(loggingEvents);
     }
 
     private void fail() {
