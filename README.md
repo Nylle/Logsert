@@ -11,7 +11,7 @@ Logsert helps to test logging functionality by recording log-events during test-
 <dependency>
     <groupId>com.github.nylle</groupId>
     <artifactId>logsert</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -30,6 +30,8 @@ class SomethingThatLogsTest {
         var expectedException = new RuntimeException("expected for test");
 
         sut.logInfoWithMdcAndException("message", Map.of("key", "value", "foo", "bar"), expectedException);
+        sut.logInfo("message 2");
+        sut.logInfo("message 2");
 
         assertThat(logRecorder).containsLogs(1)
                 .withMessage("message")
@@ -42,7 +44,11 @@ class SomethingThatLogsTest {
                 .withMdcEntriesExactly(Map.of("key", "value", "foo", "bar"))
                 .withException(expectedException)
                 .withException(RuntimeException.class)
-                .withException(RuntimeException.class, "expected for test");
+                .withException(RuntimeException.class, "expected for test")
+                .times(1)
+                .withMessage("message 2")
+                .withLevel(Level.INFO)
+                .times(2);
     }
 
     @Test
