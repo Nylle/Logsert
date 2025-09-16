@@ -33,7 +33,7 @@ class SomethingThatLogsTest {
         sut.logInfo("message 2");
         sut.logInfo("message 2");
 
-        assertThat(logRecorder).containsLogs(1)
+        assertThat(logRecorder).containsLogs(3)
                 .withMessage("message")
                 .withMessageContaining("essa")
                 .withLevel(Level.INFO)
