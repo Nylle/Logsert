@@ -30,11 +30,11 @@ class LogAssertionsTest {
         @Test
         void failsWhenNoLogsMatch() {
             var somethingThatLogs = new SomethingThatLogs();
-            somethingThatLogs.logInfo("other");
+            somethingThatLogs.logInfoWithArguments("other {}", "message");
 
             assertThatExceptionOfType(AssertionError.class)
                     .isThrownBy(() -> assertThat(sut).withMessage("message").containsLogs())
-                    .withMessageContaining("Expecting log:\n  [[other]]\n")
+                    .withMessageContaining("Expecting log:\n  [[other message]]\n")
                     .withMessageContaining("to contain:\n  [[message]]\n")
                     .withMessageContaining("at least once but was not found");
         }
