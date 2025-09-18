@@ -14,6 +14,10 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
+/**
+ * @deprecated use {@link LogAssertions} instead
+ */
+@Deprecated(since = "2.0.0", forRemoval = true)
 public class MessageAssert extends AbstractAssert<MessageAssert, List<ILoggingEvent>> {
     private List<ILoggingEvent> loggingEvents;
     private List<ILoggingEvent> candidates;

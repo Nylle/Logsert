@@ -11,6 +11,7 @@ import static com.github.nylle.logsert.LogAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 class MessageAssertTest {
+
     @RegisterExtension
     LogRecorder sut = new LogRecorder(SomethingThatLogs.class);
 

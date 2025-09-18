@@ -2,6 +2,10 @@ package com.github.nylle.logsert;
 
 import org.assertj.core.api.AbstractAssert;
 
+/**
+ * @deprecated use {@link LogAssertions} instead
+ */
+@Deprecated(since = "2.0.0", forRemoval = true)
 public class LogAssert extends AbstractAssert<LogAssert, LogRecorder> {
 
     public LogAssert(LogRecorder actual) {

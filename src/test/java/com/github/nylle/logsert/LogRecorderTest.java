@@ -1,9 +1,8 @@
 package com.github.nylle.logsert;
 
+import ch.qos.logback.classic.Level;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-
-import ch.qos.logback.classic.Level;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,5 +33,4 @@ class LogRecorderTest {
         assertThat(sut.getLogEvents().get(0).getLevel()).isEqualTo(Level.INFO);
         assertThat(sut.getLogEvents().get(0).getMDCPropertyMap()).containsEntry("key", "value");
     }
-
 }

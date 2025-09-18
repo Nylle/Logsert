@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.tuple;
 
 class LogAssertTest {
+
     @RegisterExtension
     LogRecorder sut = new LogRecorder(SomethingThatLogs.class);
 
