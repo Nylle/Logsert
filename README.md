@@ -7,13 +7,14 @@ Logsert helps to test logging functionality by recording log-events during test-
 <dependency>
     <groupId>com.github.nylle</groupId>
     <artifactId>logsert</artifactId>
-    <version>2.0.1</version>
+    <version>2.1.0</version>
     <scope>test</scope>
 </dependency>
 ```
 [Maven Central](https://search.maven.org/artifact/com.github.nylle/logsert)
 
 ## Usage
+### LogAssertions
 ```java
 class SomethingThatLogsTest {
 
@@ -57,6 +58,30 @@ class SomethingThatLogsTest {
         Assertions.assertThat(logRecorder.getLogEvents())
                 .extracting("level", "message", "MDCPropertyMap", "throwableProxy.className", "throwableProxy.message")
                 .contains(tuple(Level.INFO, "message", Map.of("key", "value"), RuntimeException.class.getName(), "expected for test"));
+    }
+}
+```
+
+### MeterAssertions
+```java
+class MeterRegistryTest {
+
+    MeterRegistry meterRegistry = new SimpleMeterRegistry();
+
+    @Test
+    void fluentAssertionsAreConvenient() {
+        meterRegistry.gauge("gauge", Tags.of(Tag.of("key1", "value1")), 12);
+        var counter = meterRegistry.counter("counter", Tags.of(Tag.of("key1", "value1")));
+        counter.increment();
+        counter.increment();
+
+        MeterAssertions.assertThat(meterRegistry)
+                .withName("counter")
+                .ofType(Counter.class)
+                .containsMeasurement(2.0)
+                .withName("gauge")
+                .ofType(Gauge.class)
+                .containsMeasurement(12);
     }
 }
 ```
