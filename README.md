@@ -77,9 +77,11 @@ class MeterRegistryTest {
 
         MeterAssertions.assertThat(meterRegistry)
                 .withName("counter")
+                .withTag("key1", "value1")
                 .ofType(Counter.class)
                 .containsMeasurement(2.0)
                 .withName("gauge")
+                .withTag("key1", "value1")
                 .ofType(Gauge.class)
                 .containsMeasurement(12);
     }
