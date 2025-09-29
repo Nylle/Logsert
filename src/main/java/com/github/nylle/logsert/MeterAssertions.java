@@ -1,13 +1,18 @@
 package com.github.nylle.logsert;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Statistic;
 import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Timer;
 import org.assertj.core.api.AbstractAssert;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -15,6 +20,7 @@ import static java.util.stream.Collectors.joining;
 
 public class MeterAssertions extends AbstractAssert<MeterAssertions, MeterRegistry> {
 
+    private static final String METER_SEPARATOR = ",\n  ";
     private Stream<Meter> candidates;
     private final ExpectedMeter expected = new ExpectedMeter();
 
@@ -45,6 +51,65 @@ public class MeterAssertions extends AbstractAssert<MeterAssertions, MeterRegist
         return this;
     }
 
+    public MeterAssertions containsCount(double count) {
+        isNotNull();
+
+        this.expected.setType(Counter.class.getSimpleName());
+        this.expected.setMeasurements(List.of(Statistic.COUNT.name() + "=" + count));
+
+        var meters = candidates
+                .filter(x -> StreamSupport.stream(x.measure().spliterator(), false).allMatch(y -> y.getStatistic() == Statistic.COUNT && y.getValue() == count))
+                .collect(Collectors.toList());
+
+        if (meters.isEmpty()) {
+            failWithMessage("\nExpecting meters:\n  %s\nto contain counter:\n  %s\nbut was not found",
+                    actual.getMeters().stream().map(x -> expected.format(x)).collect(joining(METER_SEPARATOR)),
+                    expected.format());
+        }
+
+        return new MeterAssertions(actual);
+    }
+
+    public MeterAssertions containsGauge(double value) {
+        isNotNull();
+
+        this.expected.setType(Gauge.class.getSimpleName());
+        this.expected.setMeasurements(List.of(Statistic.VALUE.name() + "=" + value));
+
+        var meters = candidates
+                .filter(x -> StreamSupport.stream(x.measure().spliterator(), false).allMatch(y -> y.getStatistic() == Statistic.VALUE && y.getValue() == value))
+                .collect(Collectors.toList());
+
+        if (meters.isEmpty()) {
+            failWithMessage("\nExpecting meters:\n  %s\nto contain gauge:\n  %s\nbut was not found",
+                    actual.getMeters().stream().map(x -> expected.format(x)).collect(joining(METER_SEPARATOR)),
+                    expected.format());
+        }
+
+        return new MeterAssertions(actual);
+    }
+
+    public MeterAssertions containsTimer(double count, double totalTime, double max) {
+        isNotNull();
+
+        this.expected.setType(Timer.class.getSimpleName());
+        this.expected.setMeasurements(List.of(Statistic.COUNT.name() + "=" + count, Statistic.TOTAL_TIME.name() + "=" + totalTime, Statistic.MAX + "=" + max));
+
+        var meters = candidates
+                .filter(x -> StreamSupport.stream(x.measure().spliterator(), false).anyMatch(y -> y.getStatistic() == Statistic.COUNT && y.getValue() == count))
+                .filter(x -> StreamSupport.stream(x.measure().spliterator(), false).anyMatch(y -> y.getStatistic() == Statistic.TOTAL_TIME && y.getValue() == totalTime))
+                .filter(x -> StreamSupport.stream(x.measure().spliterator(), false).anyMatch(y -> y.getStatistic() == Statistic.MAX && y.getValue() == max))
+                .collect(Collectors.toList());
+
+        if (meters.isEmpty()) {
+            failWithMessage("\nExpecting meters:\n  %s\nto contain timer:\n  %s\nbut was not found",
+                    actual.getMeters().stream().map(x -> expected.format(x)).collect(joining(METER_SEPARATOR)),
+                    expected.format());
+        }
+
+        return new MeterAssertions(actual);
+    }
+
     public MeterAssertions containsMeasurement(double value) {
         isNotNull();
 
@@ -54,7 +119,27 @@ public class MeterAssertions extends AbstractAssert<MeterAssertions, MeterRegist
 
         if (meters.isEmpty()) {
             failWithMessage("\nExpecting meters:\n  %s\nto contain:\n  %s\nbut was not found",
-                    actual.getMeters().stream().map(x -> expected.format(x)).collect(joining(",\n  ")),
+                    actual.getMeters().stream().map(x -> expected.format(x)).collect(joining(METER_SEPARATOR)),
+                    expected.format());
+        }
+
+        return new MeterAssertions(actual);
+    }
+
+    public MeterAssertions containsMeasurements(double... values) {
+        isNotNull();
+
+        this.expected.setMeasurements(DoubleStream.of(values).boxed().map(x -> String.valueOf(x)).collect(Collectors.toList()));
+
+        var meters = candidates.filter(x -> StreamSupport.stream(x.measure().spliterator(), false)
+                        .map(y -> String.valueOf(y.getValue()))
+                        .collect(Collectors.toList())
+                        .equals(DoubleStream.of(values).boxed().map(y -> String.valueOf(y)).collect(Collectors.toList())))
+                .collect(Collectors.toList());
+
+        if (meters.isEmpty()) {
+            failWithMessage("\nExpecting meters:\n  %s\nto contain:\n  %s\nbut was not found",
+                    actual.getMeters().stream().map(x -> expected.format(x)).collect(joining(METER_SEPARATOR)),
                     expected.format());
         }
 
@@ -121,7 +206,9 @@ public class MeterAssertions extends AbstractAssert<MeterAssertions, MeterRegist
                     name == null ? null : meter.getId().getName(),
                     type == null ? null : meter.getClass().getSimpleName(),
                     tags == null ? null : meter.getId().getTags(),
-                    measurements == null ? null : StreamSupport.stream(meter.measure().spliterator(), false).map(x -> String.valueOf(x.getValue())).collect(Collectors.toList())).format();
+                    measurements == null ? null : StreamSupport.stream(meter.measure().spliterator(), false)
+                            .map(x -> x.getStatistic().name() + "=" + x.getValue())
+                            .collect(Collectors.toList())).format();
         }
     }
 }
