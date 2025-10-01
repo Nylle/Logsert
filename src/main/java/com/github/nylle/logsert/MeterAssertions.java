@@ -126,6 +126,22 @@ public class MeterAssertions extends AbstractAssert<MeterAssertions, MeterRegist
         return new MeterAssertions(actual);
     }
 
+    public MeterAssertions containsMeasurement() {
+        isNotNull();
+
+        this.expected.setMeasurements(List.of("*"));
+
+        var meters = candidates.filter(x -> StreamSupport.stream(x.measure().spliterator(), false).findAny().isPresent()).collect(Collectors.toList());
+
+        if (meters.isEmpty()) {
+            failWithMessage("\nExpecting meters:\n  %s\nto contain:\n  %s\nbut was not found",
+                    actual.getMeters().stream().map(x -> expected.format(x)).collect(joining(METER_SEPARATOR)),
+                    expected.format());
+        }
+
+        return new MeterAssertions(actual);
+    }
+
     public MeterAssertions containsMeasurements(double... values) {
         isNotNull();
 
@@ -141,6 +157,23 @@ public class MeterAssertions extends AbstractAssert<MeterAssertions, MeterRegist
             failWithMessage("\nExpecting meters:\n  %s\nto contain:\n  %s\nbut was not found",
                     actual.getMeters().stream().map(x -> expected.format(x)).collect(joining(METER_SEPARATOR)),
                     expected.format());
+        }
+
+        return new MeterAssertions(actual);
+    }
+
+    public MeterAssertions containsNoMeasurements() {
+        isNotNull();
+
+        this.expected.setMeasurements(List.of("*"));
+
+        var meters = candidates.collect(Collectors.toList());
+
+        if (!meters.isEmpty()) {
+            failWithMessage("\nExpecting meters:\n  %s\nto contain no measurement for:\n  %s\nbut found:\n  %s",
+                    actual.getMeters().stream().map(x -> expected.format(x)).collect(joining(METER_SEPARATOR)),
+                    expected.format(),
+                    meters.stream().map(x -> expected.format(x)).collect(joining(METER_SEPARATOR)));
         }
 
         return new MeterAssertions(actual);

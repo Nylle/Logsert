@@ -245,6 +245,22 @@ class MeterAssertionsTest {
         }
 
         @TestWithFixture
+        void succeedsWhenAnyMeasurementMatches(int value) {
+            meterRegistry.gauge("gauge", Tags.of(Tag.of("key1", "value1")), value);
+            var counter = meterRegistry.counter("counter", Tags.of(Tag.of("key1", "value1")));
+            counter.increment();
+            counter.increment();
+
+            MeterAssertions.assertThat(meterRegistry)
+                    .withName("counter")
+                    .ofType(Counter.class)
+                    .containsMeasurement()
+                    .withName("gauge")
+                    .ofType(Gauge.class)
+                    .containsMeasurement();
+        }
+
+        @TestWithFixture
         void failsWhenMeasurementDoesNotMatch() {
             meterRegistry.gauge("gauge", Tags.of(Tag.of("key1", "value1")), 14);
 
@@ -257,6 +273,22 @@ class MeterAssertionsTest {
                     .withMessageContaining("  [name=gauge, measurements=[VALUE=14.0], type=DefaultGauge]")
                     .withMessageContaining("to contain:\n")
                     .withMessageContaining("  [name=gauge, measurements=[1.0], type=Gauge]")
+                    .withMessageContaining("but was not found");
+        }
+
+        @TestWithFixture
+        void failsWhenNoMeasurementMatches() {
+            meterRegistry.gauge("gauge", Tags.of(Tag.of("key1", "value1")), 14);
+
+            assertThatExceptionOfType(AssertionError.class)
+                    .isThrownBy(() -> MeterAssertions.assertThat(meterRegistry)
+                            .withName("counter")
+                            .ofType(Counter.class)
+                            .containsMeasurement())
+                    .withMessageContaining("Expecting meters:")
+                    .withMessageContaining("  [name=gauge, measurements=[VALUE=14.0], type=DefaultGauge]")
+                    .withMessageContaining("to contain:")
+                    .withMessageContaining("  [name=counter, measurements=[*], type=Counter]")
                     .withMessageContaining("but was not found");
         }
     }
@@ -297,6 +329,46 @@ class MeterAssertionsTest {
                     .withMessageContaining("to contain:\n")
                     .withMessageContaining("  [name=timer, measurements=[2.0, 99999.0, 180.0], type=Timer]")
                     .withMessageContaining("but was not found");
+        }
+    }
+
+    @Nested
+    class ContainsNoMeasurements {
+
+        @TestWithFixture
+        void succeedsWhenNoMeasurementsMatch(int value) {
+            meterRegistry.gauge("gauge", Tags.of(Tag.of("key1", "value1")), value);
+
+            var timer = meterRegistry.timer("timer", Tags.of(Tag.of("key1", "value1")));
+            timer.record(60, TimeUnit.SECONDS);
+            timer.record(180, TimeUnit.SECONDS);
+
+            MeterAssertions.assertThat(meterRegistry)
+                    .withName("counter")
+                    .ofType(Counter.class)
+                    .containsNoMeasurements();
+        }
+
+        @Test
+        void failsWhenAnyMeasurementMatches() {
+            meterRegistry.gauge("gauge", Tags.of(Tag.of("key1", "value1")), 14);
+
+            var timer = meterRegistry.timer("timer", Tags.of(Tag.of("key1", "value1")));
+            timer.record(60, TimeUnit.SECONDS);
+            timer.record(180, TimeUnit.SECONDS);
+
+            assertThatExceptionOfType(AssertionError.class)
+                    .isThrownBy(() -> MeterAssertions.assertThat(meterRegistry)
+                            .withName("timer")
+                            .ofType(Timer.class)
+                            .containsNoMeasurements())
+                    .withMessageContaining("Expecting meters:\n")
+                    .withMessageContaining("  [name=gauge, measurements=[VALUE=14.0], type=DefaultGauge]")
+                    .withMessageContaining("  [name=timer, measurements=[COUNT=2.0, TOTAL_TIME=240.0, MAX=180.0], type=CumulativeTimer]")
+                    .withMessageContaining("to contain no measurement for:\n")
+                    .withMessageContaining("  [name=timer, measurements=[*], type=Timer]")
+                    .withMessageContaining("but found:")
+                    .withMessageContaining("  [name=timer, measurements=[COUNT=2.0, TOTAL_TIME=240.0, MAX=180.0], type=CumulativeTimer]");
         }
     }
 }
