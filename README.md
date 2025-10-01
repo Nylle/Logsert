@@ -7,7 +7,7 @@ Logsert helps to test logging functionality by recording log-events during test-
 <dependency>
     <groupId>com.github.nylle</groupId>
     <artifactId>logsert</artifactId>
-    <version>2.1.1</version>
+    <version>2.1.2</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -84,12 +84,18 @@ class MeterRegistryTest {
                 .withName("counter")
                 .withTag("key1", "value1")
                 .containsCount(2.0)
+                .withName("counter")
+                .withTag("key1", "value1")
+                .ofType(Counter.class)
+                .containsMeasurement()
                 .withName("gauge")
                 .withTag("key1", "value1")
                 .containsGauge(12)
                 .withName("timer")
                 .withTag("key1", "value1")
-                .containsTimer(2.0, 240.0, 180.0);
+                .containsTimer(2.0, 240.0, 180.0)
+                .withName("missing")
+                .containsNoMeasurements();
     }
 }
 ```
