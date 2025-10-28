@@ -19,6 +19,10 @@ public class LogRecorder implements BeforeEachCallback, AfterEachCallback {
         this.logger = (Logger) LoggerFactory.getLogger(type);
     }
 
+    public LogRecorder(String name) {
+        this.logger = (Logger) LoggerFactory.getLogger(name);
+    }
+
     @Override
     public void afterEach(ExtensionContext extensionContext) {
         listAppender.stop();
