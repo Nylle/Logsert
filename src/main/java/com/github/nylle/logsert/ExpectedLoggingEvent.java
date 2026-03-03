@@ -73,11 +73,12 @@ class ExpectedLoggingEvent {
     }
 
     public String format(ILoggingEvent event) {
+        var throwableProxy = Optional.ofNullable(event.getThrowableProxy());
         return new ExpectedLoggingEvent(
                 level == null ? null : event.getLevel(),
                 message == null ? null : event.getFormattedMessage(),
-                throwableClass == null ? null : event.getThrowableProxy().getClassName(),
-                throwableMessage == null ? null : event.getThrowableProxy().getMessage(),
+                throwableClass == null ? null : throwableProxy.map(x -> x.getClassName()).orElse(null),
+                throwableMessage == null ? null : throwableProxy.map(x -> x.getMessage()).orElse(null),
                 mdc == null ? null : event.getMDCPropertyMap()).format();
     }
 }

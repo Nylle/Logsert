@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -62,20 +63,20 @@ public class LogAssertions extends AbstractAssert<LogAssertions, LogRecorder> {
     }
 
     public LogAssertions withException(Class<? extends Throwable> throwableClass) {
-        this.candidates = this.candidates.filter(x -> x.getThrowableProxy().getClassName().equals(throwableClass.getName()));
+        this.candidates = this.candidates.filter(x -> Optional.ofNullable(x.getThrowableProxy()).map(y -> y.getClassName()).orElse("").equals(throwableClass.getName()));
         this.expected.setThrowableClass(throwableClass.getName());
         return this;
     }
 
     public LogAssertions withException(Class<? extends Throwable> throwableClass, String message) {
-        this.candidates = this.candidates.filter(x -> x.getThrowableProxy().getClassName().equals(throwableClass.getName()) && x.getThrowableProxy().getMessage().equals(message));
+        this.candidates = this.candidates.filter(x -> Optional.ofNullable(x.getThrowableProxy()).map(y -> y.getClassName()).orElse("").equals(throwableClass.getName()) && x.getThrowableProxy().getMessage().equals(message));
         this.expected.setThrowableClass(throwableClass.getName());
         this.expected.setThrowableMessage(message);
         return this;
     }
 
     public LogAssertions withException(Throwable throwable) {
-        this.candidates = this.candidates.filter(x -> reflectThrowable(x.getThrowableProxy()).equals(throwable));
+        this.candidates = this.candidates.filter(x -> throwable.equals(reflectThrowable(x.getThrowableProxy())));
         this.expected.setThrowableClass(throwable.getClass().getName());
         this.expected.setThrowableMessage(throwable.getMessage());
         return this;
@@ -113,6 +114,9 @@ public class LogAssertions extends AbstractAssert<LogAssertions, LogRecorder> {
     @SuppressWarnings({"java:S3011", "java:S112"})
     private static Throwable reflectThrowable(IThrowableProxy throwableProxy) {
         try {
+            if(throwableProxy == null) {
+                return null;
+            }
             var throwable = Arrays.stream(throwableProxy.getClass().getDeclaredFields()).filter(x -> x.getName().equals("throwable")).findFirst().orElseThrow();
             throwable.setAccessible(true);
             return (Throwable) throwable.get(throwableProxy);

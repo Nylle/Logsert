@@ -236,6 +236,108 @@ class LogAssertionsTest {
         }
     }
 
+    @Nested
+    class WithException {
+
+        @Nested
+        class AssertingClass {
+
+            @Test
+            void succeeds() {
+                var expectedException = new RuntimeException("expected for test");
+
+                var somethingThatLogs = new SomethingThatLogs();
+                somethingThatLogs.logInfoWithMdcAndException("message", Map.of(), expectedException);
+
+                assertThat(sut)
+                        .withMessage("message")
+                        .withLevel(Level.INFO)
+                        .withException(RuntimeException.class)
+                        .containsLogs(1);
+            }
+
+            @Test
+            void fails() {
+                var somethingThatLogs = new SomethingThatLogs();
+                somethingThatLogs.logInfo("message");
+
+                assertThatExceptionOfType(AssertionError.class)
+                        .isThrownBy(() -> assertThat(sut)
+                                .withException(RuntimeException.class)
+                                .containsLogs())
+                        .withMessageContaining("Expecting log:\n  [[]]\n")
+                        .withMessageContaining("to contain:\n  [[java.lang.RuntimeException]]\n")
+                        .withMessageContaining("at least once but was not found");
+            }
+        }
+
+        @Nested
+        class AssertingClassAndMessage {
+
+            @Test
+            void succeeds() {
+                var expectedException = new RuntimeException("expected for test");
+
+                var somethingThatLogs = new SomethingThatLogs();
+                somethingThatLogs.logInfoWithMdcAndException("message", Map.of(), expectedException);
+
+                assertThat(sut)
+                        .withMessage("message")
+                        .withLevel(Level.INFO)
+                        .withException(RuntimeException.class, "expected for test")
+                        .containsLogs();
+            }
+
+            @Test
+            void fails() {
+                var somethingThatLogs = new SomethingThatLogs();
+                somethingThatLogs.logInfo("message");
+
+                assertThatExceptionOfType(AssertionError.class)
+                        .isThrownBy(() -> assertThat(sut)
+                                .withException(RuntimeException.class, "expected for test")
+                                .containsLogs())
+                        .withMessageContaining("Expecting log:\n  [[]]\n")
+                        .withMessageContaining("to contain:\n  [[java.lang.RuntimeException: expected for test]]\n")
+                        .withMessageContaining("at least once but was not found");
+            }
+        }
+
+        @Nested
+        class AssertingInstance {
+
+            @Test
+            void succeeds() {
+                var expectedException = new RuntimeException("expected for test");
+
+                var somethingThatLogs = new SomethingThatLogs();
+                somethingThatLogs.logInfoWithMdcAndException("message", Map.of(), expectedException);
+
+                assertThat(sut)
+                        .withMessage("message")
+                        .withLevel(Level.INFO)
+                        .withException(expectedException)
+                        .containsLogs();
+            }
+
+            @Test
+            void fails() {
+                var expectedException = new RuntimeException("expected for test");
+
+                var somethingThatLogs = new SomethingThatLogs();
+                somethingThatLogs.logInfo("message");
+
+                assertThatExceptionOfType(AssertionError.class)
+                        .isThrownBy(() -> assertThat(sut)
+                                .withException(expectedException)
+                                .containsLogs())
+                        .withMessageContaining("Expecting log:\n  [[]]\n")
+                        .withMessageContaining("to contain:\n  [[java.lang.RuntimeException: expected for test]]\n")
+                        .withMessageContaining("at least once but was not found");
+            }
+        }
+    }
+
     @Test
     void demonstrateAllAssertions() {
         var expectedException = new RuntimeException("expected for test");
